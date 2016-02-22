@@ -8,7 +8,7 @@ var Music = function () {
     };
 
     this.unMute = function () {
-        this.music.volume = 1;
+        this.music.volume = .7;
         this.muted = false;
     };
 
@@ -23,7 +23,7 @@ var Music = function () {
                 this.music.volume = 0;
             }
             this.music = music;
-            this.music.volume = 1;
+            this.music.volume = .7;
         }
 
     }

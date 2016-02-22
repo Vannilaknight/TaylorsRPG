@@ -255,6 +255,7 @@ function loop() {
                     enemies.forEach(function (enemy) {
                         if (enemy.underAttack) {
                             enemy.takeDamage(playerDamage);
+                            createjs.Sound.play("attackSound");
                             if (playerDamage > 0) {
                                 damageDisplay.text = Math.floor(playerDamage);
                             } else {
@@ -280,6 +281,7 @@ function loop() {
                             enemiesLeft++;
                         } else {
                             enemy.dead = true;
+                            createjs.Sound.play("enemyDie");
                             currentEnemies = currentEnemies.filter(function (el) {
                                 return el !== enemy;
                             });
@@ -394,6 +396,7 @@ function enemyAttack(enemies, enemyNum) {
                     playerDamageDisplay.text = 'Missed'
                 }
 
+                createjs.Sound.play("attackSound");
                 createjs.Tween.get(playerDamageDisplay).to({
                     alpha: 1,
                     y: playerDamageDisplay.y - 20
@@ -402,6 +405,7 @@ function enemyAttack(enemies, enemyNum) {
                         playerDamageDisplay.text = '';
                         playerDamageDisplay.y += 20;
                         dealDamage();
+
                         if (enemyNum == enemies.length - 1) {
                             state = RUNNING;
                         }

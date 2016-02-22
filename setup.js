@@ -133,6 +133,9 @@ var backgroundMusic;
 var mainMusic;
 var battleMusic;
 var endMusic;
+var menuMoveSound;
+var enemyDieSound;
+var attackSound;
 
 /*
  ** SCORE
@@ -287,9 +290,11 @@ function keyboardInit() {
             case KEYCODE_RIGHT:
                 return false;
             case KEYCODE_UP:
+                createjs.Sound.play("menuMove");
                 selectUp();
                 return false;
             case KEYCODE_DOWN:
+                createjs.Sound.play("menuMove");
                 selectDown();
                 return false;
             case KEYCODE_P:
@@ -396,6 +401,15 @@ function setupManifest() {
         src: "assets/audio/battle.ogg",
         id: "battleMusic"
     }, {
+        src: "assets/audio/mmove.ogg",
+        id: "menuMove"
+    }, {
+        src: "assets/audio/enemy_die.ogg",
+        id: "enemyDie"
+    }, {
+        src: "assets/audio/slice.ogg",
+        id: "attackSound"
+    }, {
         src: "assets/audio/end.ogg",
         id: "endMusic"
     }, {
@@ -449,6 +463,8 @@ function loadComplete(event) {
     battleMusic.volume = 0;
     endMusic = createjs.Sound.play("endMusic", {loop: -1});
     endMusic.volume = 0;
+
+
 
     //backgrounds
     titleScreen = new createjs.Bitmap(preload.getResult("title"));
