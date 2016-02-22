@@ -23,7 +23,8 @@ var INIT = 0,
     PRE_NEW_SKILL = 20,
     NEW_SKILL = 21,
     PRE_TARGET = 22,
-    INTERVAL = 23;
+    INTERVAL = 23,
+    LIMBO = 24;
 
 var KEYCODE_LEFT = 37,
     KEYCODE_UP = 38,
@@ -114,6 +115,7 @@ function addMenuCursor(objectToAddCursor) {
     return cursor;
 }
 
+var filesLoaded = false;
 var stage;
 var manifest;
 var preload;
@@ -178,6 +180,7 @@ var selectableChoices = [];
 var amountOfSelections;
 var menuPosition;
 var paused = false;
+var gameoverScore;
 
 /*
  ** pause menu
@@ -200,6 +203,7 @@ var defendButton;
 var skillButtonText;
 var skillButton;
 var damageDisplay;
+var playerDamageDisplay;
 
 function setMenuOptions(options) {
     if (options.length > 0) {
@@ -262,7 +266,7 @@ function pause() {
 
 function mouseInit() {
     stage.enableMouseOver();
-    //stage.cursor = 'none';
+    stage.cursor = 'none';
     stage.on("stagemousemove", function (evt) {
         mouseX = Math.floor(evt.stageX);
         mouseY = Math.floor(evt.stageY);
@@ -279,10 +283,8 @@ function keyboardInit() {
         }  //browser compatibility
         switch (evt.keyCode) {
             case KEYCODE_LEFT:
-                console.log(evt.keyCode + ": leftKey down");
                 return false;
             case KEYCODE_RIGHT:
-                console.log(evt.keyCode + ": rightKey down");
                 return false;
             case KEYCODE_UP:
                 selectUp();
@@ -311,22 +313,16 @@ function keyboardInit() {
         }  //browser compatibility
         switch (evt.keyCode) {
             case KEYCODE_LEFT:
-                console.log(evt.keyCode + ": leftKey up");
                 break;
             case KEYCODE_RIGHT:
-                console.log(evt.keyCode + ": rightKey up");
                 break;
             case KEYCODE_UP:
-                console.log(evt.keyCode + ": upKey up");
                 break;
             case KEYCODE_DOWN:
-                console.log(evt.keyCode + ": downKey up");
                 break;
             case KEYCODE_SPACE:
-                console.log(evt.keyCode + ": spaceKey up");
                 break;
             case KEYCODE_ENTER:
-                console.log(evt.keyCode + ": enterKey up");
                 break;
         }
     }
@@ -425,7 +421,7 @@ function startPreload() {
 }
 
 function handleFileLoad(event) {
-    console.log("A file has loaded of type: " + event.item.type);
+    //console.log("A file has loaded of type: " + event.item.type);
 }
 
 
@@ -442,7 +438,8 @@ function handleFileProgress(event) {
 
 
 function loadComplete(event) {
-    console.log("Finished Loading Assets");
+    filesLoaded = true;
+    //console.log("Finished Loading Assets");
 
     //audio
     backgroundMusic = new Music();
@@ -504,7 +501,6 @@ function loadComplete(event) {
     enemies.push(new Enemy(204, 283, new createjs.Bitmap(preload.getResult("slime")), 'slime 2'));
     enemies.push(new Enemy(102, 365, new createjs.Bitmap(preload.getResult("slime")), 'slime 3'));
     enemies.forEach(function (enemy) {
-        console.log(enemy.tag);
         enemy.draw();
         enemy.image.visible = false;
         enemy.levelDisplay.visible = false;
@@ -546,6 +542,11 @@ function loadComplete(event) {
     damageDisplay = drawText(380, 200, '24px', '#f22');
     damageDisplay.alpha = 0;
 
+    playerDamageDisplay = drawText(380, 200, '24px', '#f22');
+    playerDamageDisplay.alpha = 0;
+
+    gameoverScore = drawText(250,230, '24px');
+    gameoverScore.visible = false;
     /*
      * pause menu
      */
@@ -576,7 +577,7 @@ function loadComplete(event) {
 
 function main() {
     setupCanvas(); //sets up the canvas
-    mouseInit();
+    //mouseInit();
     keyboardInit();
     setupManifest();
     startPreload();

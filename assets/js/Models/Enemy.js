@@ -41,12 +41,7 @@ var Enemy = function (x, y, image, tag) {
         this.underAttack = false;
         this.deselectButton();
         if (this.currentHealth <= 0) {
-            this.image.alpha = 1;
-            createjs.Tween.get(this.image).to({
-                alpha: 0
-            }, 1500).call(function () {
-
-            });
+            this.image.visible = false;
             this.healthVisual.visible = false;
             this.levelDisplay.visible = false;
         }
@@ -64,7 +59,6 @@ var Enemy = function (x, y, image, tag) {
 
     this.fire = function () {
         if (this.isSelected) {
-            console.log('enemy attacked fired');
             this.underAttack = true;
             state = DAMAGE;
         }
@@ -74,9 +68,10 @@ var Enemy = function (x, y, image, tag) {
         this.level = level;
         this.dead = false;
         this.image.alpha = 1;
+        this.accuracy += .5;
         this.levelDisplay.text = 'Lvl. ' + this.level;
-        this.damageLow = 1.2 * levelModifierFast(this.level);
-        this.damageHigh = 1.5 * levelModifierFast(this.level);
+        this.damageLow = 1.5 * levelModifierFast(this.level);
+        this.damageHigh = 2 * levelModifierFast(this.level);
         this.health = 10 + levelModifierSlow(this.level);
         this.currentHealth = this.health;
     };

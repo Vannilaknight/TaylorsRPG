@@ -31,7 +31,6 @@ var Player = function (x, y, image) {
         }
         damage -= this.defense;
         this.currentHealth -= damage;
-        console.log(this.currentHealth + '<- current Health of player\n' + damage + ' <- damage dealt\n' + this.health + '<- total player health')
         if(this.currentHealth <= 0){
             this.image.visible = false;
             this.healthVisual.visible = false;
