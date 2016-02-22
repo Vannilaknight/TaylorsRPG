@@ -6,6 +6,7 @@ var state = INIT;
 var turn = true;
 var loadedText = drawText(50, 50);
 var enemiesLeft = 0;
+var newState;
 
 function startClick() {
     console.log("Start Fired");
@@ -62,9 +63,14 @@ function loop() {
                 attackButton.fire = attackClick;
             }
 
+            if (defendButton) {
+                defendButton.fire = defendClick;
+            }
+
             player = new Player(587, 215, playerImg);
             player.draw();
             player.image.visible = false;
+            player.levelDisplay.visible = false;
 
             state = PRE_MAIN_MENU;
             break;
@@ -100,6 +106,7 @@ function loop() {
 
             player.image.visible = true;
             player.healthVisual.visible = true;
+            player.levelDisplay.visible = true;
 
             enemies.forEach(function (enemy) {
                 enemy.healthVisual.visible = true;
@@ -115,12 +122,12 @@ function loop() {
             attackButton.showButton();
             defendButton.showButton();
             skillButton.showButton();
-            var options = [attackButton, defendButton, skillButton];
+            var options = [attackButton];
             setMenuOptions(options);
 
             if (player.currentHealth <= 0) {
                 state = PRE_GAME_OVER;
-            } else if(enemiesLeft <= 0){
+            } else if (enemiesLeft <= 0) {
                 state = NEXT_LEVEL;
             } else {
                 state = SELECTION;
@@ -134,10 +141,12 @@ function loop() {
             enemies.forEach(function (enemy) {
                 enemy.image.visible = false;
                 enemy.healthVisual.visible = false;
+                enemy.levelDisplay.visible = false;
                 enemy.deselectButton();
             });
             player.image.visible = false;
             player.healthVisual.visible = false;
+            player.levelDisplay.visible = false;
 
 
             battleBox.visible = false;
@@ -169,20 +178,27 @@ function loop() {
             background.image = instructionsScreen.image;
             break;
         case NEXT_LEVEL:
+
             startButton.hideButton();
             instructionsButton.hideButton();
             mainMenuButton.hideButton();
             muteButton.hideButton();
+            player.levelUp();
 
             enemies.forEach(function (enemy) {
                 enemiesLeft++;
                 enemy.image.visible = true;
-                enemy.setStats(getRandomInt(currentLevel, currentLevel + 1));
+                enemy.levelDisplay.visible = true;
+                if (player.level % 5 == 0) {
+                    currentLevel++;
+                    enemy.setStats(getRandomInt(currentLevel, currentLevel + 3));
+                } else {
+                    enemy.setStats(getRandomInt(currentLevel, currentLevel + 1));
+                }
             });
 
-            player.levelUp();
-
             currentLevel++;
+
             resetGameTimer();
             state = PRE_RUNNING;
             break;
@@ -211,8 +227,8 @@ function loop() {
             break;
         case PRE_TARGET:
             var options = [];
-            enemies.forEach(function(enemy){
-                if(enemy.currentHealth > 0){
+            enemies.forEach(function (enemy) {
+                if (enemy.currentHealth > 0) {
                     options.push(enemy);
                 }
             });
@@ -220,6 +236,9 @@ function loop() {
             state = TARGET;
             break;
         case TARGET:
+            attackButton.deselectButton();
+            defendButton.deselectButton();
+            skillButton.deselectButton();
             break;
         case DAMAGE:
             if (turn) {
@@ -228,20 +247,37 @@ function loop() {
                     if (enemy.underAttack) {
                         console.log('enemy took damage');
                         enemy.takeDamage(playerDamage);
+                        if (playerDamage > 0) {
+                            damageDisplay.text = Math.floor(playerDamage);
+                        } else {
+                            damageDisplay.text = 'Missed'
+                        }
+
+                        damageDisplay.x = enemy.image.x + 60;
+                        damageDisplay.y = enemy.image.y + 10;
+
+                        createjs.Tween.get(damageDisplay).to({
+                            alpha: 1,
+                            y: damageDisplay.y - 20
+                        }, 500).call(function () {
+                            createjs.Tween.get(damageDisplay).wait(500).to({alpha: 0}, 200).call(function () {
+                                damageDisplay.text = '';
+                                damageDisplay.y += 20;
+                            });
+                        });
                     }
 
-                    if(enemy.currentHealth > 0){
+                    if (enemy.currentHealth > 0) {
                         enemiesLeft++;
+                    } else {
+                        enemy.dead = true;
                     }
                 });
                 state = AI_PHASE;
             } else {
-                console.log('Enemy Turn')
-                enemies.forEach(function (enemy) {
-                    enemyDamage = enemy.attack();
-                    player.takeDamage(enemyDamage);
-                    setTimeout(function(){}, 2000)
-                });
+                console.log('Enemy Turn');
+                enemyAttack(enemies, 0);
+
                 state = RUNNING;
             }
             break;
@@ -269,10 +305,12 @@ function loop() {
             enemies.forEach(function (enemy) {
                 enemy.image.visible = false;
                 enemy.healthVisual.visible = false;
+                enemy.levelDisplay.visible = false;
                 enemy.deselectButton();
             });
             player.image.visible = false;
             player.healthVisual.visible = false;
+            player.levelDisplay.visible = false;
             state = PRE_MAIN_MENU;
             break;
         case PRE_NEW_SKILL:
@@ -280,12 +318,16 @@ function loop() {
             break;
         case NEW_SKILL:
             break;
+        case INTERVAL:
+            wait(1);
+            break;
     }
     mousePos.text = "X: " + mouseX + ", Y: " + mouseY;
     enemies.forEach(function (enemy) {
         enemy.healthVisual.graphics.clear().beginFill("#0f0").drawRect(enemy.image.x, enemy.image.y - 10, (enemy.currentHealth / enemy.health) * 100, 5);
     });
     player.healthVisual.graphics.clear().beginFill("#0f0").drawRect(player.image.x, player.image.y - 10, (player.currentHealth / player.health) * 100, 5);
+    player.levelDisplay.text = "Lvl. " + player.level + " HP: " + Math.floor(player.currentHealth) + '/' + player.health;
     stage.update();
 }
 
@@ -297,12 +339,56 @@ function runGameTimer() {
     frameCount += .5;
     if (frameCount % (FPS / 60) === 0) {
         gameTimer = frameCount / (FPS);
-        score = 'score: ' + Math.floor(gameTimer);
+    }
+    return gameTimer;
+}
+
+function wait(time) {
+    var second = runGameTimer();
+    if (second >= time) {
+        state = newState;
+        resetGameTimer();
     }
 }
 
 function runTurnCount() {
     turns++;
+}
+
+function enemyAttack(enemies, enemyNum) {
+    console.log(enemyNum);
+    if (enemyNum <= 2) {
+        var enemy = enemies[enemyNum];
+        if (!enemy.dead) {
+            enemyDamage = enemy.attack();
+
+            damageDisplay.x = player.image.x - 20;
+            damageDisplay.y = enemy.image.y + 10;
+
+            if (enemyDamage > 0) {
+                damageDisplay.text = Math.floor(enemyDamage);
+            } else {
+                damageDisplay.text = 'Missed'
+            }
+
+            createjs.Tween.get(damageDisplay).to({
+                alpha: 1,
+                y: damageDisplay.y - 20
+            }, 500).call(function () {
+                createjs.Tween.get(damageDisplay).wait(500).to({alpha: 0}, 200).call(function () {
+                    damageDisplay.text = '';
+                    damageDisplay.y += 20;
+                    dealDamage();
+                    return enemyAttack(enemies, enemyNum + 1)
+                });
+            });
+        }
+    }
+    return null;
+}
+
+function dealDamage() {
+    player.takeDamage(enemyDamage);
 }
 
 createjs.Ticker.addEventListener("tick", loop);

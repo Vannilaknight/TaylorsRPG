@@ -1,5 +1,6 @@
 var Player = function (x, y, image) {
     this.level = 0;
+    this.levelDisplay = drawText(x, y-25, '8px');
     this.damageLow;
     this.damageHigh;
     this.damageModifier = 0;
@@ -11,7 +12,7 @@ var Player = function (x, y, image) {
     this.image = image || new createjs.Bitmap();
     this.image.x = x;
     this.image.y = y;
-    this.accuracy = 85;
+    this.accuracy = 90;
     this.turnSkills = [];
     this.evasion;
 
@@ -31,6 +32,11 @@ var Player = function (x, y, image) {
         damage -= this.defense;
         this.currentHealth -= damage;
         console.log(this.currentHealth + '<- current Health of player\n' + damage + ' <- damage dealt\n' + this.health + '<- total player health')
+        if(this.currentHealth <= 0){
+            this.image.visible = false;
+            this.healthVisual.visible = false;
+            this.levelDisplay.visible = false;
+        }
     };
 
     this.draw = function draw() {
@@ -40,6 +46,7 @@ var Player = function (x, y, image) {
 
     this.levelUp = function () {
         this.level++;
+        this.levelDisplay.text = "Lvl. " + this.level + " HP: " + this.currentHealth + '/' + this.health;
         this.damageLow = (10 * levelModifierFast(this.level + 1)) + this.damageModifier;
         this.damageHigh = (12 * levelModifierFast(this.level + 1)) + this.damageModifier;
         this.health += levelModifierSlow(this.level);

@@ -22,7 +22,8 @@ var INIT = 0,
     SKILL_SELECT = 19,
     PRE_NEW_SKILL = 20,
     NEW_SKILL = 21,
-    PRE_TARGET = 22;
+    PRE_TARGET = 22,
+    INTERVAL = 23;
 
 var KEYCODE_LEFT = 37,
     KEYCODE_UP = 38,
@@ -198,6 +199,7 @@ var defendButtonText;
 var defendButton;
 var skillButtonText;
 var skillButton;
+var damageDisplay;
 
 function setMenuOptions(options) {
     if (options.length > 0) {
@@ -502,9 +504,10 @@ function loadComplete(event) {
     enemies.push(new Enemy(204, 283, new createjs.Bitmap(preload.getResult("slime")), 'slime 2'));
     enemies.push(new Enemy(102, 365, new createjs.Bitmap(preload.getResult("slime")), 'slime 3'));
     enemies.forEach(function (enemy) {
-        console.log(enemy.tag)
+        console.log(enemy.tag);
         enemy.draw();
         enemy.image.visible = false;
+        enemy.levelDisplay.visible = false;
     });
 
     /*
@@ -530,15 +533,18 @@ function loadComplete(event) {
     attackButton.text.text = "ATTACK";
     attackButton.hideButton();
 
-    defendButtonText = drawText(60, 510, '24px', '#fff');
+    defendButtonText = drawText(60, 510, '24px', '#b3b3b3');
     defendButton = new Button(defendButtonText);
     defendButton.text.text = "DEFEND";
     defendButton.hideButton();
 
-    skillButtonText = drawText(60, 550, '24px', '#fff');
+    skillButtonText = drawText(60, 550, '24px', '#b3b3b3');
     skillButton = new Button(skillButtonText);
     skillButton.text.text = "SKILL";
     skillButton.hideButton();
+
+    damageDisplay = drawText(380, 200, '24px', '#f22');
+    damageDisplay.alpha = 0;
 
     /*
      * pause menu

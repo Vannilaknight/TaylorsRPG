@@ -2,6 +2,7 @@ var Enemy = function (x, y, image, tag) {
     this.tag = tag || '';
     this.isSelected;
     this.level;
+    this.levelDisplay = drawText(x, y - 25, '8px');
     this.damageLow;
     this.damageHigh;
     this.health;
@@ -11,10 +12,11 @@ var Enemy = function (x, y, image, tag) {
     this.image = image;
     this.image.x = x;
     this.image.y = y;
-    this.healthVisual = drawRect(x, y-10, 0, 25, '#0F0');
-    this.accuracy = 60;
+    this.healthVisual = drawRect(x, y - 10, 0, 25, '#0F0');
+    this.accuracy = 50;
     this.evasion;
     this.hand = addMenuCursor(image);
+    this.dead = false;
 
     this.selectButton = function () {
         this.isSelected = true;
@@ -27,7 +29,7 @@ var Enemy = function (x, y, image, tag) {
     };
 
     this.attack = function attack() {
-        if(rollFate(this.accuracy)){
+        if (rollFate(this.accuracy)) {
             return getRandomInt(this.damageLow, this.damageHigh);
         } else {
             return 0;
@@ -38,9 +40,15 @@ var Enemy = function (x, y, image, tag) {
         this.currentHealth -= damage;
         this.underAttack = false;
         this.deselectButton();
-        if(this.currentHealth <= 0){
-            this.image.visible = false;
+        if (this.currentHealth <= 0) {
+            this.image.alpha = 1;
+            createjs.Tween.get(this.image).to({
+                alpha: 0
+            }, 1500).call(function () {
+
+            });
             this.healthVisual.visible = false;
+            this.levelDisplay.visible = false;
         }
     };
 
@@ -54,8 +62,8 @@ var Enemy = function (x, y, image, tag) {
 
     };
 
-    this.fire = function(){
-        if(this.isSelected) {
+    this.fire = function () {
+        if (this.isSelected) {
             console.log('enemy attacked fired');
             this.underAttack = true;
             state = DAMAGE;
@@ -64,8 +72,11 @@ var Enemy = function (x, y, image, tag) {
 
     this.setStats = function (level) {
         this.level = level;
-        this.damageLow = 5 * levelModifierFast(this.level + 1);
-        this.damageHigh = 7 * levelModifierFast(this.level + 1);
+        this.dead = false;
+        this.image.alpha = 1;
+        this.levelDisplay.text = 'Lvl. ' + this.level;
+        this.damageLow = 1.2 * levelModifierFast(this.level);
+        this.damageHigh = 1.5 * levelModifierFast(this.level);
         this.health = 10 + levelModifierSlow(this.level);
         this.currentHealth = this.health;
     };
